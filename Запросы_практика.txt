@@ -1,0 +1,52 @@
+Задания https://sql-academy.org/ru/trainer
+
+93. Какой средний возраст клиентов, купивших Smartwatch (использовать наименование товара product.name) в 2024 году?
+
+SELECT avg(c.age) average_age
+from Product pr
+join Purchase pu ON pu.product_key=pr.product_key
+join Customer c on c.customer_key=pu.customer_key
+where pr.name='SmartWatch' and year(pu.date)=2024
+
+94. Вывести имена покупателей, каждый из которых приобрёл Laptop и Monitor (использовать наименование товара product.name) в марте 2024 года?
+
+// Моё решение
+SELECT c.name
+from Product pr
+join Purchase pu ON pu.product_key=pr.product_key
+join Customer c on c.customer_key=pu.customer_key
+WHERE (pr.name='Laptop' or pr.name='Monitor') and YEAR(pu.date)=2024 and MONTH(pu.date)=03
+
+// Правильное решение
+SELECT q1.name FROM 
+(
+SELECT DISTINCT c.name, c.customer_key
+from Product pr
+join Purchase pu ON pu.product_key=pr.product_key
+join Customer c on c.customer_key=pu.customer_key
+WHERE pr.name='Laptop' and YEAR(pu.date)=2024 and MONTH(pu.date)=3) q1
+JOIN 
+(
+SELECT DISTINCT c.name, c.customer_key
+from Product pr
+join Purchase pu ON pu.product_key=pr.product_key
+join Customer c on c.customer_key=pu.customer_key
+WHERE pr.name='Monitor' and YEAR(pu.date)=2024 and MONTH(pu.date)=3) q2 on q2.customer_key=q1.customer_key
+
+44. Найдите максимальный возраст (количество лет) среди обучающихся 10 классов на сегодняшний день. Для получения текущих даты и времени используйте функцию NOW().
+
+select YEAR(NOW())-Year(MIN(birthday)) as max_year
+from Class
+JOIN Student_in_class on class=Class.id -- выбрали всех стедунтов из 10-x классов
+JOIN Student on Student.id=student -- подцепляем учящихся 
+where Class.name LIKE '%10%'
+
+45. Какие кабинеты чаще всего использовались для проведения занятий? Выведите те, которые использовались максимальное количество раз.
+
+WITH q as 
+(SELECT classroom, COUNT(classroom) as cnt
+FROM  Schedule
+GROUP BY classroom)
+SELECT classroom 
+FROM q
+where q.cnt=(SELECT  max(cnt) as cnt from q)
